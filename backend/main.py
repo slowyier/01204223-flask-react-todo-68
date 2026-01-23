@@ -3,8 +3,9 @@ from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import DeclarativeBase
 from sqlalchemy import Integer, String
-from sqlalchemy.orm import Mapped, mapped_column
-
+from sqlalchemy import Integer, String, ForeignKey                            # เพิ่ม import Foreignkey
+from sqlalchemy.orm import Mapped, mapped_column, relationship                # เพิ่ม import relatiohship
+from flask_migrate import Migrate  
 
 
 app = Flask(__name__)
@@ -16,12 +17,15 @@ class Base(DeclarativeBase):
   pass
 
 db = SQLAlchemy(app, model_class=Base)
-
+migrate = Migrate(app, db)    
 
 class TodoItem(db.Model):
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     title: Mapped[str] = mapped_column(String(100))
     done: Mapped[bool] = mapped_column(default=False)
+
+    ##### เพิ่มส่วน relationship  ซึ่งตรงนี้จะไม่กระทบ schema database เลย (เพราะว่าไม่มีการ map ไปยังคอลัมน์ใดๆ)
+    comments: Mapped[list["Comment"]] = relationship(back_populates="todo")
 
     def to_dict(self):
         return {
@@ -29,10 +33,19 @@ class TodoItem(db.Model):
             "title": self.title,
             "done": self.done
         }
+
+class Comment(db.Model):
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    message: Mapped[str] = mapped_column(String(250))
+    todo_id: Mapped[int] = mapped_column(ForeignKey('todo_item.id'))
+
+    todo: Mapped["TodoItem"] = relationship(back_populates="comments")
     
-    
-with app.app_context():
-    db.create_all()
+# ลบโค้ดสองบรรทัดนี้ จริง ๆ เราต้องลบส่วนสร้างฐานข้อมูลเท่านั้น แต่ถ้าไม่มีส่วนนี้โค้ดใส่ข้อมูลเบื้องต้นก็จะทำงานไม่ได้ด้วยเช่นกัน
+# with app.app_context():
+#    db.create_all()
+
+# ส่วนด้านล่างนี้ให้ comment ทิ้งเป็น string ไว้ก่อน
 
 INITIAL_TODOS = [
     TodoItem(title='Learn Flask'),
@@ -41,18 +54,12 @@ INITIAL_TODOS = [
 
 with app.app_context():
     if TodoItem.query.count() == 0:
-         for item in INITIAL_TODOS:
-             db.session.add(item)
-         db.session.commit()
+        for item in INITIAL_TODOS:
+            db.session.add(item)
+        db.session.commit()
 
-todo_list = [
-    { "id": 1,
-      "title": 'Learn Flask',
-      "done": True },
-    { "id": 2,
-      "title": 'Build a Flask App',
-      "done": False },
-]
+
+
 
 @app.route('/api/todos/', methods=['GET'])
 def get_todos():
@@ -78,19 +85,15 @@ def add_todo():
 
 @app.route('/api/todos/<int:id>/toggle/', methods=['PATCH'])
 def toggle_todo(id):
-    todos = [todo for todo in todo_list if todo['id'] == id]
-    if not todos:
-        return (jsonify({'error': 'Todo not found'}), 404)
-    todo = todos[0]
-    todo['done'] = not todo['done']
-    return jsonify(todo)
+    todo = TodoItem.query.get_or_404(id)
+    todo.done = not todo.done
+    db.session.commit()
+    return jsonify(todo.to_dict())
 
 
 @app.route('/api/todos/<int:id>/', methods=['DELETE'])
 def delete_todo(id):
-    global todo_list
-    todos = [todo for todo in todo_list if todo['id'] == id]
-    if not todos:
-        return (jsonify({'error': 'Todo not found'}), 404)
-    todo_list = [todo for todo in todo_list if todo['id'] != id]
+    todo = TodoItem.query.get_or_404(id)
+    db.session.delete(todo)
+    db.session.commit()
     return jsonify({'message': 'Todo deleted successfully'})
