@@ -31,7 +31,10 @@ class TodoItem(db.Model):
         return {
             "id": self.id,
             "title": self.title,
-            "done": self.done
+            "done": self.done,
+            "comments": [
+                comment.to_dict() for comment in self.comments
+            ]
         }
 
 class Comment(db.Model):
@@ -40,12 +43,15 @@ class Comment(db.Model):
     todo_id: Mapped[int] = mapped_column(ForeignKey('todo_item.id'))
 
     todo: Mapped["TodoItem"] = relationship(back_populates="comments")
-    
-# ลบโค้ดสองบรรทัดนี้ จริง ๆ เราต้องลบส่วนสร้างฐานข้อมูลเท่านั้น แต่ถ้าไม่มีส่วนนี้โค้ดใส่ข้อมูลเบื้องต้นก็จะทำงานไม่ได้ด้วยเช่นกัน
-# with app.app_context():
-#    db.create_all()
 
-# ส่วนด้านล่างนี้ให้ comment ทิ้งเป็น string ไว้ก่อน
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "message": self.message,
+            "todo_id": self.todo_id
+        }
+    
+
 
 INITIAL_TODOS = [
     TodoItem(title='Learn Flask'),
