@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react'
 import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
+import viteLogo from '../public/vite.svg'
 import './App.css'
 
-function App() {
+function App({ init_todo = []}) {
   const TODOLIST_API_URL = 'http://localhost:5000/api/todos/';
 
-  const [todoList, setTodoList] = useState([]);
+  const [todoList, setTodoList] = useState(init_todo);
   const [newTitle, setNewTitle] = useState("");
   const [newComments, setNewComments] = useState({});
 
