@@ -1,6 +1,7 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { expect,vi } from 'vitest'
 import TodoItem from '../TodoItem';
+import userEvent from '@testing-library/user-event'
 
 const baseTodo = {             // ** TodoItem พื้นฐานสำหรับทดสอบ
   id: 1,
@@ -57,5 +58,40 @@ describe('TodoItem', () => {
     const button = screen.getByRole('button', { name: /toggle/i });
     button.click();
     expect(onToggleDone).toHaveBeenCalledWith(baseTodo.id);
+  });
+
+  it('makes callback to deleteTodo when delete button is clicked', () => {
+    const onToggleDelete = vi.fn();
+    render(
+      <TodoItem 
+       todo={baseTodo} 
+       deleteTodo={onToggleDelete} />
+    )
+      const button = screen.getByRole('button', { name: /❌/i });
+      button.click();
+      expect(onToggleDelete).toHaveBeenCalledWith(baseTodo.id);
+    
+  });
+
+
+  it('makes callback to addNewComment when a new comment is added', async () => {
+    const onAddNewComment = vi.fn();
+    render(
+      <TodoItem 
+       todo={baseTodo}
+       addNewComment={onAddNewComment}
+       />
+    );
+
+    // พิมพ์ข้อความลงใน textbox
+    const input = screen.getByRole('textbox');
+    await userEvent.type(input, 'New comment');
+
+    //
+    // TODO: เติมโค้ดสำหรับเรียกให้กดปุ่มด้วย
+    //
+    const button = screen.getByRole('button', { name: /Add Comment/i });
+    button.click();
+    expect(onAddNewComment).toHaveBeenCalledWith(baseTodo.id, 'New comment');
   });
 });
