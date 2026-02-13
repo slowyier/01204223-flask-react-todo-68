@@ -2,19 +2,27 @@ import { render, screen } from '@testing-library/react'
 import { expect } from 'vitest'
 import App from '../App.jsx'
 
-const baseTodo = [{             // ** TodoItem พื้นฐานสำหรับทดสอบ
+const baseTodo = {             // ** TodoItem พื้นฐานสำหรับทดสอบ
   id: 1,
   title: 'Sample Todo',
   done: false,
   comments: [],
-}];
+};
 
 describe('App', () => {
-  it('renders with no comments correctly', () => {    
-    // *** โค้ดสำหรับเทสที่เพิ่มเข้ามา
+  it('renders with comments correctly', () => {
+    const todoWithComment = [{
+      ...baseTodo,
+      comments: [
+        {id: 1, message: 'First comment'},
+        {id: 2, message: 'Another comment'},
+      ]
+    }];
     render(
-      <App init_todo={baseTodo} />
+      <App init_todo={todoWithComment} />
     );
     expect(screen.getByText('Sample Todo')).toBeInTheDocument();
+    expect(screen.getByText('First comment')).toBeInTheDocument();
+    expect(screen.getByText('Another comment')).toBeInTheDocument();
   });
 });
