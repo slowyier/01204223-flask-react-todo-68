@@ -2,11 +2,12 @@ import { useState, useEffect } from 'react'
 import reactLogo from './assets/react.svg'
 import viteLogo from '../public/vite.svg'
 import './App.css'
+import TodoItem from './TodoItem.jsx'
 
-function App({ init_todo = []}) {
+function App() {
   const TODOLIST_API_URL = 'http://localhost:5000/api/todos/';
 
-  const [todoList, setTodoList] = useState(init_todo);
+  const [todoList, setTodoList] = useState([]);
   const [newTitle, setNewTitle] = useState("");
   const [newComments, setNewComments] = useState({});
 
@@ -42,7 +43,7 @@ function App({ init_todo = []}) {
     }
   }
 
-  async function addNewComment(todoId) {
+   async function addNewComment(todoId, newComment) {     // เพิ่ม parameter
     try {
       const url = `${TODOLIST_API_URL}${todoId}/comments/`;
       const response = await fetch(url, {
@@ -50,10 +51,12 @@ function App({ init_todo = []}) {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ 'message': newComments[todoId] || "" }),
+        body: JSON.stringify({ 'message': newComment }),    // ใช้ newComment
       });
       if (response.ok) {
-        setNewComments({ ...newComments, [todoId]: "" });
+        // 
+        // ******  ลบบรรทัด setNewComments({ ...newComments, [todoId]: "" }); *******
+        // 
         await fetchTodoList();
       }
     } catch (error) {
@@ -99,34 +102,13 @@ function App({ init_todo = []}) {
       <h1>Todo List</h1>
       <ul>
         {todoList.map(todo => (
-          <li key={todo.id}>
-            <span className={todo.done ? "done" : ""}>{todo.title}</span>
-            <button onClick={() => {toggleDone(todo.id)}}>Toggle</button>
-            <button onClick={() => {deleteTodo(todo.id)}}>❌</button>
-            {(todo.comments?.length === 0) && (<><br /><b>No comments</b></>)}
-            {(todo.comments) && (todo.comments.length > 0) && (
-              <>
-                <br />
-                <b>Comments ({todo.comments.length || 0}):</b>
-                <ul>
-                  {todo.comments.map(comment => (
-                    <li key={comment.id}>{comment.message}</li>
-                  ))}
-                </ul>
-              </>
-            )}
-            <div className="new-comment-forms">
-              <input
-                type="text"
-                value={newComments[todo.id] || ""}
-                onChange={(e) => {
-                  const value = e.target.value;
-                  setNewComments({ ...newComments, [todo.id]: value });
-                }}
-              />
-              <button onClick={() => {addNewComment(todo.id)}}>Add Comment</button>
-            </div>
-          </li>
+          <TodoItem 
+            key={todo.id}
+            todo={todo}
+            toggleDone={toggleDone}
+            deleteTodo={deleteTodo}
+            addNewComment={addNewComment}
+          />
         ))}
       </ul>
       New: <input type="text" value={newTitle} onChange={(e) => {setNewTitle(e.target.value)}} />
