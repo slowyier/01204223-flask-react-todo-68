@@ -1,4 +1,4 @@
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import { expect,vi } from 'vitest'
 import TodoItem from '../TodoItem';
 import userEvent from '@testing-library/user-event'
