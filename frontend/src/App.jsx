@@ -5,18 +5,20 @@ import './App.css'
 import TodoItem from './TodoItem.jsx'
 import TodoList from './TodoList.jsx'
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
-
+import { AuthProvider } from './context/AuthContext.jsx'
 
 function App() {
   const TODOLIST_API_URL = 'http://localhost:5000/api/todos/';
+  const TODOLIST_LOGIN_URL = 'http://localhost:5000/api/login/';
 
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route 
-          path="/" 
-          element={
-            <TodoList apiUrl={TODOLIST_API_URL}/>
+    <AuthProvider>
+      <BrowserRouter>
+        <Routes>
+          <Route 
+            path="/" 
+            element={
+              <TodoList apiUrl={TODOLIST_API_URL}/>
           } 
         />
         <Route 
@@ -29,8 +31,15 @@ function App() {
             </>
           } 
         />
+         <Route
+          path="/login"
+          element={
+            <LoginForm loginUrl={TODOLIST_LOGIN_URL} />
+          }
+        />
       </Routes>
     </BrowserRouter>
+  </AuthProvider>
   )
   
 }
