@@ -11,8 +11,8 @@ from flask_jwt_extended import JWTManager # เพิ่ม import สำหร�
 
 from os import getenv
 
-JWT_SECRET_KEY = getenv("JWT_SECRET_KEY")
-
+JWT_SECRET_KEY = getenv("JWT_SECRET_KEY", "asfjlksdfjdlskjfaljdsajkldslkdfsklsdkldsf")
+DATABASE_URL = getenv("DATABASE_URL", "sqlite:///todos.db")
 
 
 import click
@@ -20,7 +20,7 @@ import click
 app = Flask(__name__)
 CORS(app)
 
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///todos.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE_URL
 app.config['JWT_SECRET_KEY'] = JWT_SECRET_KEY
 jwt = JWTManager(app)
 db.init_app(app)                                                     # แก้จาก db = SQLAlchemy(app, model_class=Base)
